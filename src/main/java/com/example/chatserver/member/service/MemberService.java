@@ -1,6 +1,7 @@
 package com.example.chatserver.member.service;
 
 import com.example.chatserver.member.domain.Member;
+import com.example.chatserver.member.dto.MemberListResDto;
 import com.example.chatserver.member.dto.MemberLoginReqDto;
 import com.example.chatserver.member.dto.MemberSaveReqDto;
 import com.example.chatserver.member.repository.MemberRepository;
@@ -8,6 +9,9 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -48,5 +52,22 @@ public class MemberService {
         }
 
         return member;
+    }
+
+    public List<MemberListResDto> findAll(){
+        // 멤버 리스트로 조회
+        List<Member> members = memberRepository.findAll();
+        // MemberListResDto 형식에 맞춰서 넣을 거임
+        List<MemberListResDto> memberListResDtos = new ArrayList<>();
+        // for문으로 돌려서 하나씩 넣어주기
+        for(Member m : members){
+            MemberListResDto memberListResDto =new MemberListResDto();
+            memberListResDto.setId(m.getId());
+            memberListResDto.setEmail(m.getEmail());
+            memberListResDto.setName(m.getName());
+            memberListResDtos.add(memberListResDto);
+        }
+        // 그거 리턴함
+        return memberListResDtos;
     }
 }
