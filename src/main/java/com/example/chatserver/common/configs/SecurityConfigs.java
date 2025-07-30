@@ -34,7 +34,7 @@ public class SecurityConfigs {
                 .cors(cors->cors.configurationSource(corsConfigurationSource())) // 요청 응답 도메인이 달라도 통신할 수 있도록, 허용하는 포트 지정
                 .csrf(AbstractHttpConfigurer::disable) // csrf 비활성화
                 .httpBasic(AbstractHttpConfigurer::disable) // http 베이직 비활성화
-                .authorizeHttpRequests(a-> a.requestMatchers("/member/create", "/member/doLogin").permitAll().anyRequest().authenticated()) // 해당 url에서는 로그인검사 안하겠다.(예외처리하기), 나머지에서는 인증처리 하겠다..
+                .authorizeHttpRequests(a-> a.requestMatchers("/member/create", "/member/doLogin", "/connect/**").permitAll().anyRequest().authenticated()) // 해당 url에서는 로그인검사 안하겠다.(예외처리하기), 나머지에서는 인증처리 하겠다..
                 .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션방식을 사용하지 않겠다.
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
