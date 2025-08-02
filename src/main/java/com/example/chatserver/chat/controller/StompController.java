@@ -1,12 +1,10 @@
 package com.example.chatserver.chat.controller;
 
-import com.example.chatserver.chat.dto.ChatMessageReqDto;
+import com.example.chatserver.chat.dto.ChatMessageDto;
 import com.example.chatserver.chat.service.ChatService;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
@@ -36,10 +34,10 @@ public class StompController {
 
     // 방법2. MessageMapping 어노테이션만 활용
     @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable Long roomId, ChatMessageReqDto chatMessageReqDto) {
-        log.info("Sending message: {} ", chatMessageReqDto.getMessage());
-        chatService.saveMessage(roomId, chatMessageReqDto);
-        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageReqDto);
+    public void sendMessage(@DestinationVariable Long roomId, ChatMessageDto chatMessageDto) {
+        log.info("Sending message: {} ", chatMessageDto.getMessage());
+        chatService.saveMessage(roomId, chatMessageDto);
+        messageTemplate.convertAndSend("/topic/" + roomId, chatMessageDto);
 
     }
 
