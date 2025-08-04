@@ -227,6 +227,25 @@ public class ChatService {
 
     }
 
+    // 채팅방 나가기
+    public void leaveGroupChatRoom(Long roomId){
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(()->new EntityNotFoundException("Room not found"));
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow();
+
+        if(chatRoom.getIsGroupChat().equals('N')){
+            throw new IllegalArgumentException("단체 채팅방이 아닙니다.");
+        }
+
+        // 참여자에서 나를 삭제하기
+        ChatParticipant c = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).orElseThrow(()-> new EntityNotFoundException("Participant not found"));
+        chatParticipantRepository.delete(c);
+
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+        // 채팅방에 참여자가 한명도 없는 경우
+        if(chatParticipants.isEmpty()){
+        chatRoomRepository.delete(chatRoom); // chatMessage, ReadStatus에 Cascade 옵션을 걸어서 같이 삭제됨
+        }
+    }
 
 
 }
