@@ -188,5 +188,18 @@ public class ChatService {
 
         return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isPresent();
     }
+
+    public void messageRead(Long roomId){
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(()->new EntityNotFoundException("Room not found"));
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow();
+
+        // 해당 멤버의 채팅방 읽음목록 확인
+        List<ReadStatus> readStatuses = readStatusRepository.findByChatRoomAndMember(chatRoom, member);
+
+        // 다 읽음처리 하기
+        for(ReadStatus rs : readStatuses){
+                rs.updateRead(true);
+        }
+    }
 }
 

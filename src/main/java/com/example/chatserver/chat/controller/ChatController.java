@@ -48,5 +48,13 @@ public class ChatController {
 
     }
 
+    //  채팅메시지 읽음처리
+    @PostMapping("/room/{roomId}/read")
+    public ResponseEntity<?> meassageRead(@PathVariable Long roomId){
+        chatService.messageRead(roomId);
+        return ResponseEntity.ok().build();
+    }
+
+
 
 }
