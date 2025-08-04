@@ -1,7 +1,9 @@
 package com.example.chatserver.chat.controller;
 
+import com.example.chatserver.chat.domain.ChatRoom;
 import com.example.chatserver.chat.dto.ChatMessageDto;
 import com.example.chatserver.chat.dto.ChatRoomListResDto;
+import com.example.chatserver.chat.dto.MyChatListResDto;
 import com.example.chatserver.chat.service.ChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +55,14 @@ public class ChatController {
     public ResponseEntity<?> meassageRead(@PathVariable Long roomId){
         chatService.messageRead(roomId);
         return ResponseEntity.ok().build();
+    }
+
+    // 내 채팅방 목록조회
+    // 브라우저에 전달할 목록 : roomId, roomName, 그룹채팅여부, 메시지 읽음 개수
+    @GetMapping("/my/rooms")
+    public ResponseEntity<?> getMyChatRooms(){
+        List<MyChatListResDto> myChatListResDtos =  chatService.getMyChatRooms();
+        return new ResponseEntity<>(myChatListResDtos, HttpStatus.OK);
     }
 
 

@@ -6,6 +6,7 @@ import com.example.chatserver.chat.domain.ChatRoom;
 import com.example.chatserver.chat.domain.ReadStatus;
 import com.example.chatserver.chat.dto.ChatMessageDto;
 import com.example.chatserver.chat.dto.ChatRoomListResDto;
+import com.example.chatserver.chat.dto.MyChatListResDto;
 import com.example.chatserver.chat.repository.ChatMessageRepository;
 import com.example.chatserver.chat.repository.ChatParticipantRepository;
 import com.example.chatserver.chat.repository.ChatRoomRepository;
@@ -201,5 +202,32 @@ public class ChatService {
                 rs.updateRead(true);
         }
     }
+
+
+    // 내 채팅방 목록 조회
+    public List<MyChatListResDto> getMyChatRooms(){
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow();
+
+        List<ChatParticipant> chatParticipants =  chatParticipantRepository.findByAllMember(member);
+        List<MyChatListResDto> myChatListResDtos = new ArrayList<>();
+
+        for(ChatParticipant c : chatParticipants){
+            Long count = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(c.getChatRoom(), member);
+            MyChatListResDto dto = MyChatListResDto.builder()
+                    .roomId(c.getChatRoom().getId())
+                    .roomName(c.getChatRoom().getName())
+                    .unReadCount(count)
+                    .isGroupChat(c.getChatRoom().getIsGroupChat())
+                    .build();
+
+            myChatListResDtos.add(dto);
+        }
+
+        return myChatListResDtos;
+
+    }
+
+
+
 }
 
