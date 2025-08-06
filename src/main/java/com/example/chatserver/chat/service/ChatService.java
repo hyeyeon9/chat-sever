@@ -125,6 +125,12 @@ public class ChatService {
         // member 조회
         Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new EntityNotFoundException("Member not found"));
 
+        // 만약에 그룹채팅방이면 참여시키고, 개인 채팅방이면 거절
+        if(chatRoom.getIsGroupChat().equals("N")){
+            throw new IllegalArgumentException("그룹채팅이 아닙니다.");
+        }
+
+
         // 이미 참여자인지 검증하겠다.
         Optional<ChatParticipant> participant =  chatParticipantRepository.findByChatRoomAndMember(chatRoom, member);
         if(!participant.isPresent()){
@@ -208,7 +214,7 @@ public class ChatService {
     public List<MyChatListResDto> getMyChatRooms(){
         Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow();
 
-        List<ChatParticipant> chatParticipants =  chatParticipantRepository.findByAllMember(member);
+        List<ChatParticipant> chatParticipants =  chatParticipantRepository.findAllByMember(member);
         List<MyChatListResDto> myChatListResDtos = new ArrayList<>();
 
         for(ChatParticipant c : chatParticipants){
@@ -245,6 +251,37 @@ public class ChatService {
         if(chatParticipants.isEmpty()){
         chatRoomRepository.delete(chatRoom); // chatMessage, ReadStatus에 Cascade 옵션을 걸어서 같이 삭제됨
         }
+
+
+
+    }
+
+
+    // 기존 개인채팅방 있으면 찾고, 없으면 새로 만들자.
+    public Long getOrCreatePrivateRoom(Long otherMemberId){
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow();
+
+        Member otherMember = memberRepository.findById(otherMemberId).orElseThrow(()->new EntityNotFoundException("Member not found"));
+
+        // 개인 채팅방이 있디면 해당 roomId 리턴
+        Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId());
+        if(chatRoom.isPresent()){
+            return chatRoom.get().getId();
+        }
+
+        // 없으면 채팅방 생성
+        ChatRoom newRoom = ChatRoom.builder()
+                .name(member.getName() + "-" + otherMember.getName())
+                .isGroupChat("N")
+                .build();
+
+        chatRoomRepository.save(newRoom);
+
+        // 두사람을 참여자로 추가하기
+        addParticipantToRoom(newRoom,member);
+        addParticipantToRoom(newRoom,otherMember);
+
+        return newRoom.getId();
     }
 
 
