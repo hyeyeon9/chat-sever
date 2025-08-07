@@ -11,19 +11,23 @@ import com.example.chatserver.chat.repository.ChatMessageRepository;
 import com.example.chatserver.chat.repository.ChatParticipantRepository;
 import com.example.chatserver.chat.repository.ChatRoomRepository;
 import com.example.chatserver.chat.repository.ReadStatusRepository;
+import com.example.chatserver.common.sse.SseService;
 import com.example.chatserver.member.domain.Member;
 import com.example.chatserver.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @Transactional
+@Log4j2
 public class ChatService {
 
     private final ChatRoomRepository chatRoomRepository;
@@ -31,14 +35,16 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private  final ReadStatusRepository readStatusRepository;
     private final MemberRepository memberRepository;
+    private final SseService sseService;
 
 
-    public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, ReadStatusRepository readStatusRepository, MemberRepository memberRepository) {
+    public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, ReadStatusRepository readStatusRepository, MemberRepository memberRepository, SseService sseService) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatParticipantRepository = chatParticipantRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.readStatusRepository = readStatusRepository;
         this.memberRepository = memberRepository;
+        this.sseService = sseService;
     }
 
     // 메시지 저장 로직
@@ -73,6 +79,34 @@ public class ChatService {
 
             readStatusRepository.save(readStatus);
         }
+
+        for(ChatParticipant c : chatParticipants){
+            Member receiver = c.getMember();
+
+            // 보낸 사람 제외
+            if(receiver.equals(sender)) continue;
+
+            // 안 읽은 메시지 개수 계산
+            Long unreadCount = readStatusRepository.countByChatRoomAndMemberAndIsReadFalse(chatRoom, receiver);
+
+            System.out.println(receiver.getEmail());
+            System.out.println(unreadCount);
+
+            // 전송할 데이터
+            Map<String, Object> data = Map.of(
+                    "roomId", chatRoom.getId(),
+                    "unReadCount", unreadCount
+            );
+
+            System.out.println(data);
+
+            // SSE 전송
+            sseService.sendUnreadCount(receiver.getEmail(), data);
+        }
+
+
+
+
 
     }
 
