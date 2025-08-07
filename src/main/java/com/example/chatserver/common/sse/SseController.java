@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
@@ -31,7 +28,8 @@ public class SseController {
     // MediaType.TEXT_EVENT_STREAM_VALUE : SSE를 위한 HTTP 응답 타입 설정 이다.
     // 이걸 설정하면 프론트가 sse 스트림이라고 인식할 수 있다.
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@RequestParam("token") String token){
+    public SseEmitter subscribe(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.replace("Bearer ", "");
 
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
