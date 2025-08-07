@@ -4,12 +4,15 @@ import com.example.chatserver.common.auth.JwtTokenProvider;
 import com.example.chatserver.member.domain.Member;
 import com.example.chatserver.member.dto.MemberListResDto;
 import com.example.chatserver.member.dto.MemberLoginReqDto;
+import com.example.chatserver.member.dto.MemberResDto;
 import com.example.chatserver.member.dto.MemberSaveReqDto;
 import com.example.chatserver.member.service.MemberService;
+import com.example.chatserver.member.service.S3Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +26,14 @@ public class MemberController
  {
      private final MemberService memberService;
      private final JwtTokenProvider jwtTokenProvider;
+     private final S3Service s3Service;
 
 
      // 의존성 주입
-     public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider) {
+     public MemberController(MemberService memberService, JwtTokenProvider jwtTokenProvider, S3Service s3Service) {
          this.memberService = memberService;
          this.jwtTokenProvider = jwtTokenProvider;
+         this.s3Service = s3Service;
      }
 
      @PostMapping("/create") // url 패
@@ -54,11 +59,33 @@ public class MemberController
 
      }
 
-     @GetMapping("list")
+     @GetMapping("/list")
      public ResponseEntity<?> memberList(){
          List<MemberListResDto> dtos = memberService.findAll();
          return new ResponseEntity<>(dtos, HttpStatus.OK);
      }
 
+     // 현재 사용자 정보 넘기기
+     @GetMapping("/me")
+     public ResponseEntity<?> getMyPageInfo(){
+         MemberResDto dto = memberService.getMyPageInfo();
+         return new ResponseEntity<>(dto, HttpStatus.OK);
+     }
+
+     // 멤버 닉네임 수정하기
+     @PatchMapping("/name")
+     public ResponseEntity<?> updateName(@RequestParam String name){
+         memberService.updateName(name);
+         return ResponseEntity.ok().build();
+     }
+
+     // 프로필 사진 수정하기
+     @PostMapping("/profile")
+     public ResponseEntity<?> updateProfile(@RequestPart MultipartFile image){
+         String imageUrl = s3Service.upload(image);
+
+         memberService.updateProfileImage(imageUrl);
+         return ResponseEntity.ok(Map.of("profileImageUrl", imageUrl));
+     }
 
  }

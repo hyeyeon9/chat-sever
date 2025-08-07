@@ -26,8 +26,20 @@ public class Member extends BaseTimeEntity {
 
     private String password;
 
+    private String profileImageUrl;
+
     @Enumerated(EnumType.STRING) // 기본 Enum이 숫자로 들어가기에 String으로 지정하기
     @Builder.Default // 이게 있어야 아래 디폴트값이 지정해서 들어감, 또한 @Builder 어노테이션 위에 있어야함
     private Role role = Role.USER;
+
+    public void updateName(String name){
+        this.name = name;
+    }
+
+    public void updateProfileImage(String imageUrl){
+        this.profileImageUrl = imageUrl;
+    }
+
+
 
 }

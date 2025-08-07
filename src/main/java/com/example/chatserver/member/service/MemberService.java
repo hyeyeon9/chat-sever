@@ -3,12 +3,15 @@ package com.example.chatserver.member.service;
 import com.example.chatserver.member.domain.Member;
 import com.example.chatserver.member.dto.MemberListResDto;
 import com.example.chatserver.member.dto.MemberLoginReqDto;
+import com.example.chatserver.member.dto.MemberResDto;
 import com.example.chatserver.member.dto.MemberSaveReqDto;
 import com.example.chatserver.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,5 +72,31 @@ public class MemberService {
         }
         // 그거 리턴함
         return memberListResDtos;
+    }
+
+    // 내 정보 가져가기
+    public MemberResDto getMyPageInfo(){
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new EntityNotFoundException("Member not found"));
+
+        MemberResDto memberResDto = MemberResDto.builder()
+                .profileImageUrl(member.getProfileImageUrl())
+                .name(member.getName())
+                .build();
+
+        return memberResDto;
+    }
+
+    // 닉네임 업데이트
+    public void updateName(String name){
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new EntityNotFoundException("Member not found"));
+        member.updateName(name);
+        memberRepository.save(member);
+    }
+
+    // 프로필 사진 업데이트
+    public void updateProfileImage(String imageUrl){
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new EntityNotFoundException("Member not found"));
+        member.updateProfileImage(imageUrl);
+        memberRepository.save(member);
     }
 }
