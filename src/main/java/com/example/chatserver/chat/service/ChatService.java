@@ -210,6 +210,8 @@ public class ChatService {
             ChatMessageDto chatMessageDto = ChatMessageDto.builder()
                     .message(c.getContent())
                     .senderEmail(c.getMember().getEmail())
+                    .profileImageUrl(c.getMember().getProfileImageUrl())
+                    .senderName(c.getMember().getName())
                     .build();
 
             chatMessageDtos.add(chatMessageDto);

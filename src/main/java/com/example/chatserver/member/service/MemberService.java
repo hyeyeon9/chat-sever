@@ -68,7 +68,9 @@ public class MemberService {
             memberListResDto.setId(m.getId());
             memberListResDto.setEmail(m.getEmail());
             memberListResDto.setName(m.getName());
+            memberListResDto.setProfileImageUrl(m.getProfileImageUrl());
             memberListResDtos.add(memberListResDto);
+
         }
         // 그거 리턴함
         return memberListResDtos;
@@ -98,5 +100,11 @@ public class MemberService {
         Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new EntityNotFoundException("Member not found"));
         member.updateProfileImage(imageUrl);
         memberRepository.save(member);
+    }
+
+    // 프로필 사진 조회
+    public Member getMember(String senderEmail){
+        Member member = memberRepository.findByEmail(senderEmail).orElseThrow(()-> new EntityNotFoundException("Member not found"));
+        return member;
     }
 }

@@ -47,7 +47,7 @@ public class StompController {
 
         chatMessageDto.setRoomId(roomId);
         // json 형태로 바꾸기
-        ObjectMapper  objecctMapper = new ObjectMapper();
+        ObjectMapper  objectMapper = new ObjectMapper();
         String message = objectMapper.writeValueAsString(chatMessageDto);
 
         redisPubSubService.publish("chat",message );
